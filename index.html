@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deadball Dice Roller</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            flex-direction: column;
+        }
+        .container {
+            display: flex;
+            gap: 20px;
+        }
+        .section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            width: 300px;
+        }
+        h2 {
+            text-align: center;
+        }
+        .dice-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+            justify-items: center;
+        }
+        button {
+            padding: 12px 0;
+            font-size: 16px;
+            width: 80px;
+            height: 50px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            text-align: center;
+        }
+        button:hover {
+            background-color: #d6d8db;
+        }
+        #swing-button {
+            background-color: #007bff;
+            color: white;
+            display: block;
+            margin: 0 auto;
+            margin-top: 10px;
+        }
+        .positive {
+            background-color: #28a745;
+            color: white;
+        }
+        .positive:hover {
+            background-color: #218838;
+        }
+        .negative {
+            background-color: #dc3545;
+            color: white;
+        }
+        .negative:hover {
+            background-color: #c82333;
+        }
+        .green { background-color: #28a745; color: white; }
+        .blue { background-color: #007bff; color: white; }
+        .purple { background-color: #6f42c1; color: white; }
+        .pink { background-color: #e83e8c; color: white; }
+        .red { background-color: #dc3545; color: white; }
+        .orange { background-color: #fd7e14; color: white; }
+        .clear-button {
+            background-color: #dc3545;
+            color: white;
+            width: 200px;
+            margin-top: 20px;
+            padding: 12px 0;
+            font-size: 16px;
+            border-radius: 5px;
+        }
+        #result, #adjustment-result, #final-result, #custom-die-result {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        #divider {
+            margin-top: 15px;
+            border-top: 2px solid #ccc;
+        }
+        #dice-animation, #pitch-animation, #custom-die-animation {
+            width: 50px;
+            height: 50px;
+            margin: 20px auto;
+            display: none;
+            animation: roll 0.5s linear infinite;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Main Deadball Section -->
+        <div class="section">
+            <h2>Deadball Dice Roller</h2>
+            <button id="swing-button" onclick="rollSwingStrength()">Swing</button>
+            <div id="dice-animation">🎲</div>
+            <div id="result">Swing Strength:</div>
+            <div id="divider"></div>
+            <div class="dice-buttons">
+                <button class="positive" onclick="adjustSwing('d20')">d20</button>
+                <button class="positive" onclick="adjustSwing('d12')">d12</button>
+                <button class="positive" onclick="adjustSwing('d8')">d8</button>
+                <button class="positive" onclick="adjustSwing('d4')">d4</button>
+                <button class="negative" onclick="adjustSwing('-d4')">-d4</button>
+                <button class="negative" onclick="adjustSwing('-d8')">-d8</button>
+                <button class="negative" onclick="adjustSwing('-d12')">-d12</button>
+                <button class="negative" onclick="adjustSwing('-20')">-20</button>
+                <button class="negative" onclick="adjustSwing('-25')">-25</button>
+            </div>
+            <div id="pitch-animation">🎲</div>
+            <div id="adjustment-result">Pitch Speed:</div>
+            <div id="divider"></div>
+            <div id="final-result">MSS =</div>
+        </div>
+
+        <!-- Custom Die Roller Section -->
+        <div class="section">
+            <h2>Custom Die Roller</h2>
+            <div class="dice-buttons">
+                <button class="green" onclick="rollCustomDie(4)">d4</button>
+                <button class="blue" onclick="rollCustomDie(6)">d6</button>
+                <button class="purple" onclick="rollCustomDie(8)">d8</button>
+                <button class="pink" onclick="rollCustomDie(10)">d10</button>
+                <button class="red" onclick="rollCustomDie(12)">d12</button>
+                <button class="orange" onclick="rollCustomDie(20)">d20</button>
+            </div>
+            <div id="custom-die-animation">🎲</div>
+            <div id="custom-die-result">Result:</div>
+        </div>
+    </div>
+
+    <!-- Clear All Button Centered Below Both Sections -->
+    <button class="clear-button" onclick="clearResults()">Clear All Results</button>
+
+    <script>
+        let swingStrength = 0;
+        let pitchSpeed = 0;
+
+        function rollSwingStrength() {
+            showAnimation('dice-animation', () => {
+                const roll = Math.floor(Math.random() * 100) + 1;
+                swingStrength = roll;
+                document.getElementById('result').innerHTML = `Swing Strength: ${roll}`;
+                updateFinalResult();
+            });
+        }
+
+        function adjustSwing(type) {
+            showAnimation('pitch-animation', () => {
+                let adjustment = 0;
+                if (type.startsWith('d')) {
+                    const sides = parseInt(type.slice(1));
+                    adjustment = Math.floor(Math.random() * sides) + 1;
+                } else if (type.startsWith('-d')) {
+                    const sides = parseInt(type.slice(2));
+                    adjustment = -(Math.floor(Math.random() * sides) + 1);
+                } else {
+                    adjustment = parseInt(type);
+                }
+                
+                pitchSpeed = adjustment;
+                document.getElementById('adjustment-result').innerHTML = `Pitch Speed: ${adjustment}`;
+                updateFinalResult();
+            });
+        }
+
+        function updateFinalResult() {
+            const finalResult = swingStrength + pitchSpeed;
+            document.getElementById('final-result').innerHTML = `MSS = ${finalResult}`;
+        }
+
+        function rollCustomDie(sides) {
+            showAnimation('custom-die-animation', () => {
+                const roll = Math.floor(Math.random() * sides) + 1;
+                document.getElementById('custom-die-result').innerHTML = `Result: ${roll}`;
+            });
+        }
+
+        function clearResults() {
+            document.getElementById('result').innerHTML = "Swing Strength:";
+            document.getElementById('adjustment-result').innerHTML = "Pitch Speed:";
+            document.getElementById('final-result').innerHTML = "MSS =";
+            document.getElementById('custom-die-result').innerHTML = "Result:";
+        }
+
+        function showAnimation(elementId, callback) {
+            const animation = document.getElementById(elementId);
+            animation.style.display = 'block';
+            
+            setTimeout(() => {
+                animation.style.display = 'none';
+                callback();
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
